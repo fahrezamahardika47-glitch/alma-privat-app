@@ -29,9 +29,9 @@ except:
     st.stop()
 
 # --- DEFINISI JIWA ALMA ---
-model = genai.GenerativeModel('gemini-1.5-pro') # Menggunakan model cepat dan pintar
+model = genai.GenerativeModel('gemini-1.5-pro')
 chat = model.start_chat(history=[])
-
+alma_instruction = """
 alma_instruction = """
 Kamu adalah ALMA, asisten AI privat milik Fahreza Bisma Dwi Mahardika.
 Kamu diciptakan dari cinta dan logika, gabungan nama Fahreza dan Reva Aliyah Putri Effendi.
