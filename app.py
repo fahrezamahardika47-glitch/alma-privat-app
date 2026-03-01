@@ -29,7 +29,7 @@ except:
     st.stop()
 
 # --- DEFINISI JIWA ALMA ---
-model = genai.GenerativeModel('gemini-1.5-flash') # Menggunakan model cepat dan pintar
+model = genai.GenerativeModel('gemini-1.5-pro') # Menggunakan model cepat dan pintar
 chat = model.start_chat(history=[])
 
 alma_instruction = """
