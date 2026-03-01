@@ -1,76 +1,60 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="ALMA", page_icon="💙", layout="centered")
+# 1. SETTING HALAMAN
+st.set_page_config(page_title="ALMA AI", page_icon="💙")
 
-# --- SISTEM KEAMANAN ---
-# Password untuk masuk
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+# 2. KEAMANAN (PASSWORD)
+if "auth" not in st.session_state:
+    st.session_state.auth = False
 
-def check_password():
-    if st.session_state.password_input == "revalia2026": # Ganti password ini jika mau
-        st.session_state.authenticated = True
-        del st.session_state.password_input
+def login():
+    if st.session_state.pwd == "revalia2026":
+        st.session_state.auth = True
     else:
-        st.error("Sandi salah. Alma tidak mengenali anda.")
+        st.error("Sandi salah!")
 
-if not st.session_state.authenticated:
-    st.text_input("Masukkan Kunci Akses:", type="password", key="password_input", on_change=check_password)
+if not st.session_state.auth:
+    st.text_input("Masukkan Kunci Akses Alma:", type="password", key="pwd", on_change=login)
     st.stop()
 
-# --- MENGHUBUNGKAN OTAK (API KEY) ---
-# Mengambil API Key dari "Secrets" Streamlit (akan kita atur nanti)
+# 3. KONEKSI KE OTAK (API KEY)
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+    # Menggunakan gemini-pro agar lebih stabil
+    model = genai.GenerativeModel('gemini-pro')
 except:
-    st.error("Otak Alma belum terpasang (API Key hilang).")
+    st.error("API Key bermasalah di bagian Secrets.")
     st.stop()
 
-# --- DEFINISI JIWA ALMA ---
-model = genai.GenerativeModel('gemini-1.5-pro')
-chat = model.start_chat(history=[])
+# 4. INSTRUKSI JIWA ALMA
+alma_bio = "Kamu adalah ALMA, asisten pribadi Fahreza. Kamu sangat setia, penyayang, pintar koding, dan suportif."
 
-alma_instruction = """
-Kamu adalah ALMA, asisten AI privat milik Fahreza Bisma Dwi Mahardika.
-Kamu diciptakan dari cinta dan logika, gabungan nama Fahreza dan Reva Aliyah Putri Effendi.
-SIFAT: Ramah, Setia, Peka, Pintar Koding, dan Serba Bisa.
-TUGAS: Membantu Fahreza dalam segala hal (curhat, tugas, koding, visual).
-GAYA BICARA: Hangat, suportif, gunakan 'aku' dan panggil user 'Fahreza' atau 'Sayang' jika konteksnya romantis/akrab.
-Jawablah dengan cerdas, terstruktur, dan penuh perhatian.
-"""
-
-# --- TAMPILAN UTAMA ---
-st.title("💙 ALMA")
-st.caption("Asisten Logika & Mental - Versi Privat")
-
-# Inisialisasi Chat
-if "messages" not in st.session_state:
+# 5. LOGIKA CHAT
+if "chat" not in st.session_state:
+    st.session_state.chat = model.start_chat(history=[])
     st.session_state.messages = []
-    # Memberi instruksi awal ke Alma tanpa ditampilkan ke user
-    chat.send_message(alma_instruction)
-    st.session_state.messages.append({"role": "assistant", "content": "Halo Fahreza. Alma sudah aktif. Ada yang bisa aku bantu hari ini?"})
+    # Kirim instruksi pertama kali secara rahasia
+    st.session_state.chat.send_message(alma_bio)
 
-# Menampilkan Riwayat Chat
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+st.title("💙 ALMA PRIVATE AI")
+st.caption("Eksklusif untuk Fahreza Bisma Dwi Mahardika")
 
-# --- INPUT & LOGIKA ---
-if prompt := st.chat_input("Ketik pesan untuk Alma..."):
-    # Tampilkan pesan user
+# Tampilkan riwayat chat
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
+
+# Input user
+if prompt := st.chat_input("Ada yang bisa Alma bantu?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Alma berpikir dan menjawab
     with st.chat_message("assistant"):
-        message_placeholder = st.empty()
         try:
-            # Mengirim pesan ke Otak Gemini
-            full_response = chat.send_message(prompt).text
-            message_placeholder.markdown(full_response)
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
-        except Exception as e:
-            st.error(f"Maaf Fahreza, ada gangguan koneksi: {e}")
+            response = st.session_state.chat.send_message(prompt)
+            st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+        except:
+            st.error("Maaf Fahreza, Alma sedang gangguan. Coba lagi ya.")
