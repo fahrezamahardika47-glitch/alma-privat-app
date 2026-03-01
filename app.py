@@ -22,7 +22,7 @@ if not st.session_state.auth:
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     # Menggunakan gemini-pro agar lebih stabil
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-1.5-flash')
 except:
     st.error("API Key bermasalah di bagian Secrets.")
     st.stop()
